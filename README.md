@@ -12,4 +12,4 @@ Useful git commands
 * git status
 * git commit -a -m
 * git push
-* >> (After push, check whether github repo has been changed)
+>> (After push, check whether github repo has been changed)
