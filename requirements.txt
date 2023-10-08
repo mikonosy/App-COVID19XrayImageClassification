@@ -1,0 +1,29 @@
+# System admin
+mongsysadmin
+mongmong123
+# Medical tech
+mongtech
+mongmong123
+
+1. Web & App Technical Requirements
+pip install mysql-connector-python
+pip install pyqt5
+pip install pyqt5-tools
+pip install whitenoise
+pip install mysqlclient
+pip install phonenumbers django-phonenumber-field
+pip install python-dateutil
+pip install pydicom
+pip install matplotlib
+pip install mpld3
+pip install keras
+pip install tensorflow
+
+2. Set up Database
+MySQL Server 8.0 or above
+MySQL Workbench 8.0 or above
+
+Run MySQL 8.0 Command Line Client prompt
+CREATE DATABASE fyp;
+SHOW DATABASES; (check fyp db is created)
+
