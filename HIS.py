@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import mysql.connector
 from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtCore import pyqtSignal
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -14,27 +15,27 @@ class Ui_MainWindow(object):
         self.Banner.setObjectName("Banner")
         self.Back = QtWidgets.QLabel(self.Banner)
         self.Back.setGeometry(QtCore.QRect(1000, 20, 151, 41))
-        self.Back.setStyleSheet("color: rgb(0, 0, 255);\n"
-                                      "font: 18pt \"MS Shell Dlg 2\";")
+        self.Back.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
         self.Back.setObjectName("Back")
         self.Logo = QtWidgets.QLabel(self.Banner)
-        self.Logo.setGeometry(QtCore.QRect(0, 10, 91, 61))
-        self.Logo.setStyleSheet("image: url(:/newPrefix/intelligentHealthInc/intelligentHealthInc/static/logo-removebg-preview.png);")
+        self.Logo.setGeometry(QtCore.QRect(0, 10, 110, 61))
+        self.Logo.setStyleSheet("image: url(./logo-removebg-preview.png);")
         self.Logo.setText("")
         self.Logo.setObjectName("Logo")
         self.IntelligentHealthInc = QtWidgets.QLabel(self.Banner)
-        self.IntelligentHealthInc.setGeometry(QtCore.QRect(130, 0, 161, 71))
+        self.IntelligentHealthInc.setGeometry(QtCore.QRect(100, 5, 161, 71))
         self.IntelligentHealthInc.setStyleSheet("font: 18pt \"MS Shell Dlg 2\";\n"
-                                                "color: #0000FF")
-        self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
+                                        "color: #0000FF;\n"
+                                        "font-size: 12pt;")
+        self.IntelligentHealthInc.setObjectName("Intelligent HealthInc")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(-20, 80, 1261, 491))
-        self.label.setStyleSheet("background-image: url(:/newPrefix/static/background.png);")
+        self.label.setStyleSheet("background-image: url(./background.png);")
         self.label.setText("")
         self.label.setObjectName("label")
-        self.ToHIS = QtWidgets.QPushButton(self.centralwidget)
-        self.ToHIS.setGeometry(QtCore.QRect(1000, 110, 93, 28))
-        self.ToHIS.setObjectName("ToHIS")
+        self.ToHome = QtWidgets.QPushButton(self.centralwidget)
+        self.ToHome.setGeometry(QtCore.QRect(1000, 110, 75, 28))
+        self.ToHome.setObjectName("ToHome")
 
         self.searchBar = QLineEdit(self.centralwidget)
         self.searchBar.setGeometry(QtCore.QRect(20, 100, 200, 25))
@@ -138,8 +139,10 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.Back.setText(_translate("MainWindow", "Back"))
         self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
-        self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>HealthInc</p></body></html>"))
-        self.ToHIS.setText(_translate("MainWindow", "Add Info"))
+        self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
+        self.IntelligentHealthInc.setStyleSheet("padding-top: 5px; color: navy; font-family: Arial; font-size: 22px; font-weight: bold;")
+        self.ToHome.setText(_translate("MainWindow", "Add"))
+        self.ToHome.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
     
     def showAddInfoButton(self):
         # Show the "Add Info" button when any checkbox is checked
@@ -150,8 +153,37 @@ class Ui_MainWindow(object):
                 return
         # Hide the button if no checkbox is checked
         self.add_info_button.hide()
+    
+    def on_add_button_click(self):
+        
+        selected_rows = []
 
+        # Iterate through the rows and collect data from selected rows
+        for row_num in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
+            if item and item.checkState() == QtCore.Qt.Checked:
+                ###############################################################################
+                # 1. Add columns
+                # 2. Change MainWindow name(Currently home.py and HIS.py class share the same main window obj name)
+                # 3. Change main() at the bottom
+                # 4. Test sending data
+                # 5. At home.py, add 'Reload' button
+                record_id = self.tableWidget.item(row_num, 1).text()  # Replace with the correct column index
+                patient_name = self.tableWidget.item(row_num, 2).text()  # Replace with the correct column index
+                patient_id = self.tableWidget.item(row_num, 3).text()  # Replace with the correct column index
+                age = self.tableWidget.item(row_num, 4).text()  # Replace with the correct column index
+                dob = self.tableWidget.item(row_num, 5).text()  # Replace with the correct column index
+                selected_rows.append((record_id, patient_name, patient_id, age, dob))
 
+        # Emit the signal with the selected data
+        if selected_rows:
+            for data in selected_rows:
+                self.data_signal.emit(data[0], data[1], data[2], data[3], data[4])
+            print("Selected data was successfully sent to main dashboard")
+        else:
+            print("No data selected to send.")
+            
+            
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

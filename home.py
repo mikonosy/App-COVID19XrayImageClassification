@@ -6,9 +6,6 @@ import subprocess
 import os
 import sys
 
-
-
-
 class Ui_MainWindow(object):
     def connect_to_database(self):
         try:
@@ -53,6 +50,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1246, 716)
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.Banner = QtWidgets.QFrame(self.centralwidget)
@@ -62,22 +60,24 @@ class Ui_MainWindow(object):
         # Inside the `setupUi` method of the `Ui_MainWindow` class, add the following code to create the logout button:
         self.logoutButton = QtWidgets.QPushButton(self.Banner)
         self.logoutButton.setGeometry(QtCore.QRect(990, 20, 151, 41))
-        self.logoutButton.setStyleSheet("color: rgb(0, 0, 255);\nfont: 18pt \"MS Shell Dlg 2\";\nborder: none;")
+        self.logoutButton.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
         self.logoutButton.setText("Logout")
+        self.logoutButton.setCursor(Qt.PointingHandCursor)
         self.logoutButton.clicked.connect(self.logout)
         self.Logo = QtWidgets.QLabel(self.Banner)
-        self.Logo.setGeometry(QtCore.QRect(0, 10, 91, 61))
-        self.Logo.setStyleSheet("image: url(:/static/logo-removebg-preview.png);")
+        self.Logo.setGeometry(QtCore.QRect(0, 10, 110, 61))
+        self.Logo.setStyleSheet("image: url(./logo-removebg-preview.png);")
         self.Logo.setText("")
         self.Logo.setObjectName("Logo")
         self.IntelligentHealthInc = QtWidgets.QLabel(self.Banner)
-        self.IntelligentHealthInc.setGeometry(QtCore.QRect(130, 0, 161, 71))
+        self.IntelligentHealthInc.setGeometry(QtCore.QRect(100, 5, 161, 71))
         self.IntelligentHealthInc.setStyleSheet("font: 18pt \"MS Shell Dlg 2\";\n"
-                                                "color: #0000FF")
-        self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
+                                        "color: #0000FF;\n"
+                                        "font-size: 12pt;")
+        self.IntelligentHealthInc.setObjectName("Intelligent HealthInc")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(-10, 80, 1261, 491))
-        self.label.setStyleSheet("background-image: url(:/static/background.png);")
+        self.label.setStyleSheet("background-image: url(./background.png);")
         self.label.setText("")
         self.label.setObjectName("label")
         MainWindow.setCentralWidget(self.centralwidget)
@@ -113,7 +113,7 @@ class Ui_MainWindow(object):
         self.connectButton = QtWidgets.QPushButton(self.centralwidget)
         self.connectButton.setGeometry(QtCore.QRect(10, 590, 131, 41))
         self.connectButton.setText("Fetch Data")
-
+        
         # Connect the button's clicked signal to your custom method
         self.connectButton.clicked.connect(self.on_button_click)
 
@@ -131,7 +131,8 @@ class Ui_MainWindow(object):
         self.connectButton = QtWidgets.QPushButton(self.centralwidget)
         self.connectButton.setGeometry(QtCore.QRect(10, 590, 131, 41))
         self.connectButton.setText("Fetch Data")
-
+        self.connectButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
+        
         # Connect the button's clicked signal to your custom method
         self.connectButton.clicked.connect(self.on_button_click)
 
@@ -153,8 +154,10 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
-        self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>HealthInc</p></body></html>"))
+        self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
+        self.IntelligentHealthInc.setStyleSheet("font-weight: bold; padding-top: 5px; color: navy; font-family: Arial; font-size: 22px")
         self.HISbutton.setText(_translate("MainWindow", "To HIS"))
+        self.HISbutton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
 
     # For example, connect to the database and fetch data when a button is clicked
     def on_button_click(self):
