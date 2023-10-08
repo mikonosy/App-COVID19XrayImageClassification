@@ -13,3 +13,7 @@ Useful git commands
 * git commit -a -m
 * git push
 >> (After push, check whether github repo has been changed)
+
+# How to run?
+1. Connect Database (MySQL Workbench - each root account info needed)
+2. Fetch data and insert data
