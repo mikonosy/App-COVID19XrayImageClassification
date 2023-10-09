@@ -1,12 +1,12 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import mysql.connector
-from PyQt5.QtCore import Qt, QDateTime
+from PyQt5.QtCore import Qt, QDateTime, pyqtSignal
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QAbstractItemView, QCalendarWidget, QTimeEdit
 import subprocess
 import os
 import sys
 
-class Ui_MainWindow(object):
+class Ui_HomeWindow(object):
     def connect_to_database(self):
         try:
             self.db = mysql.connector.connect(
@@ -50,14 +50,21 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1246, 716)
-
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.Banner = QtWidgets.QFrame(self.centralwidget)
         self.Banner.setGeometry(QtCore.QRect(0, 0, 1251, 80))
         self.Banner.setStyleSheet("background-color: rgb(227, 236, 250);")
         self.Banner.setObjectName("Banner")
-        # Inside the `setupUi` method of the `Ui_MainWindow` class, add the following code to create the logout button:
+        
+        ##################################################
+        # Create the "Reload" button
+        self.reload_button = QtWidgets.QPushButton(self.centralwidget)
+        self.reload_button.setGeometry(QtCore.QRect(150, 590, 131, 41))
+        # self.reload_button.clicked.connect(self.on_reload_button_click)
+        ##################################################
+        
+        # Inside the `setupUi` method of the `Ui_HomeWindow` class, add the following code to create the logout button:
         self.logoutButton = QtWidgets.QPushButton(self.Banner)
         self.logoutButton.setGeometry(QtCore.QRect(990, 20, 151, 41))
         self.logoutButton.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
@@ -102,7 +109,7 @@ class Ui_MainWindow(object):
 
         # Add a new column header for the Emergency button
         self.tableWidget.setColumnCount(10)
-        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Patient Name", "Patient", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
+        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Name", "Patient ID", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
         # Set the table to non-editable
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
@@ -143,22 +150,66 @@ class Ui_MainWindow(object):
 
         # Add a new column header for the Emergency button
         self.tableWidget.setColumnCount(10)
-        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Patient Name", "Patient", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
+        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Name", "Patient ID", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
         # Set the table to non-editable
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Connect the cellClicked signal to your custom method
         self.tableWidget.cellClicked.connect(self.on_cell_click)
+    
+    # def on_reload_button_click(self):
+    # # Your code to fetch selected rows and data goes here
+    #     selected_rows = []
 
+    #     # Iterate through the rows and collect data from selected rows
+    #     for row_num in range(self.tableWidget.rowCount()):
+    #         item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
+    #         if item and item.checkState() == QtCore.Qt.Checked:
+    #             # Extract data from selected rows (modify as needed)
+    #             patient_name = self.tableWidget.item(row_num, 1).text()
+    #             patient_id = self.tableWidget.item(row_num, 2).text()
+    #             dob = self.tableWidget.item(row_num, 3).text()
+    #             modality = self.tableWidget.item(row_num, 4).text()
+
+    #             # Add the data to your selected_rows list
+    #             selected_rows.append((patient_name, patient_id, dob, modality))
+
+    
+    # def handle_selected_data(self, patient_name, patient_id, dob, modality):
+
+    #     # Create a new row in the table widget to display the received data
+    #     row_position = self.tableWidget.rowCount()
+    #     self.tableWidget.insertRow(row_position)
+
+    #     # Set the data in the table widget's cells
+    #     self.tableWidget.setItem(row_position, 0, QTableWidgetItem(""))
+    #     self.tableWidget.setItem(row_position, 1, QTableWidgetItem(patient_name))
+    #     self.tableWidget.setItem(row_position, 2, QTableWidgetItem(patient_id))
+    #     self.tableWidget.setItem(row_position, 3, QTableWidgetItem("")) 
+    #     self.tableWidget.setItem(row_position, 4, QTableWidgetItem(dob))
+    #     self.tableWidget.setItem(row_position, 5, QTableWidgetItem(modality))
+    #     self.tableWidget.setItem(row_position, 6, QTableWidgetItem(""))  
+    #     self.tableWidget.setItem(row_position, 7, QTableWidgetItem(""))  
+    #     self.tableWidget.setItem(row_position, 8, QTableWidgetItem(""))  
+
+    #     # You can also add the "Emergency" button to the new row if needed
+    #     emergency_button = QtWidgets.QPushButton("Emergency")
+    #     emergency_button.clicked.connect(lambda _, row=row_position: self.on_emergency_button_click(row))
+    #     self.tableWidget.setCellWidget(row_position, 9, emergency_button)
+    #     self.update_button_text(row_position, "Emergency")
+
+        
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("Home", "Home"))
         self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
         self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
         self.IntelligentHealthInc.setStyleSheet("font-weight: bold; padding-top: 5px; color: navy; font-family: Arial; font-size: 22px")
         self.HISbutton.setText(_translate("MainWindow", "To HIS"))
         self.HISbutton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
-
+        self.reload_button.setText(_translate("MainWindow", "Reload"))
+        self.reload_button.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
+        
     # For example, connect to the database and fetch data when a button is clicked
     def on_button_click(self):
         self.connect_to_database()
@@ -337,11 +388,12 @@ class Ui_MainWindow(object):
         def change_status(new_status):
             with open("status.txt", "w") as file:
                 file.write(new_status)
-
+        
+        
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
+    ui = Ui_HomeWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())

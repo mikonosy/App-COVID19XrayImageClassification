@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
                 self.centralwidget.setObjectName("centralwidget")
                 self.label = QtWidgets.QLabel(self.centralwidget)
                 self.label.setGeometry(QtCore.QRect(0, 0, 1241, 851))
-                self.label.setStyleSheet("background-image: url(static\background.png);")
+                self.label.setStyleSheet("background-image: url(./background.png);")
                 self.label.setText("")
                 self.label.setObjectName("label")
                 self.Banner = QtWidgets.QFrame(self.centralwidget)
@@ -41,17 +41,17 @@ class Ui_MainWindow(object):
                 self.Banner.setObjectName("Banner")
                 # Add these lines to the `setupUi` method in `patientrecord.py`
                 self.backButton = QtWidgets.QPushButton(self.Banner)
-                self.backButton.setGeometry(QtCore.QRect(830, 20, 151, 41))
-                self.backButton.setStyleSheet("color: rgb(0, 0, 255);\nfont: 18pt \"MS Shell Dlg 2\";\nborder: none;")
+                self.backButton.setGeometry(QtCore.QRect(1000, 20, 151, 41))
+                self.backButton.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
                 self.backButton.setText("Back")
                 self.backButton.clicked.connect(self.go_back)  # Connect the button click event to go_back method
                 self.Logo = QtWidgets.QLabel(self.Banner)
-                self.Logo.setGeometry(QtCore.QRect(0, 10, 91, 61))
-                self.Logo.setStyleSheet("image: url(static\logo-removebg-preview.png);")
+                self.Logo.setGeometry(QtCore.QRect(0, 10, 100, 61))
+                self.Logo.setStyleSheet("image: url(./logo-removebg-preview.png);")
                 self.Logo.setText("")
                 self.Logo.setObjectName("Logo")
                 self.IntelligentHealthInc = QtWidgets.QLabel(self.Banner)
-                self.IntelligentHealthInc.setGeometry(QtCore.QRect(130, 0, 161, 71))
+                self.IntelligentHealthInc.setGeometry(QtCore.QRect(100, 5, 161, 71))
                 self.IntelligentHealthInc.setStyleSheet("font: 18pt \"MS Shell Dlg 2\";\n"
                 "color: #0000FF")
                 self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
@@ -71,7 +71,7 @@ class Ui_MainWindow(object):
                 self.RecordID.setObjectName("RecordID")
                 self.gridLayout_2.addWidget(self.RecordID, 0, 0, 1, 1)
                 self.PatientName = QtWidgets.QLabel(self.gridGroupBox1)
-                self.PatientName.setObjectName("PatientName")
+                self.PatientName.setObjectName("Name")
                 self.gridLayout_2.addWidget(self.PatientName, 0, 1, 1, 1)
                 self.PatientID = QtWidgets.QLabel(self.gridGroupBox1)
                 self.PatientID.setObjectName("PatientID")
@@ -158,7 +158,7 @@ class Ui_MainWindow(object):
         def updatePatientInfo(self):
                 # Update the labels in gridGroupBox1 with the stored patient information
                 self.RecordID.setText(f"Record ID: {self.record_id}")
-                self.PatientName.setText(f"Patient Name: {self.patient_name}")
+                self.PatientName.setText(f"Name: {self.patient_name}")
                 self.PatientID.setText(f"Patient ID: {self.patient_id}")
                 self.Age.setText(f"Age: {self.age}")
                 self.DateofBirth.setText(f"Date of Birth: {self.dob}")
@@ -169,13 +169,14 @@ class Ui_MainWindow(object):
                 
         def retranslateUi(self, MainWindow):
                 _translate = QtCore.QCoreApplication.translate
-                MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+                MainWindow.setWindowTitle(_translate("Patient Record", "Patient Record"))
                 self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
-                self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>HealthInc</p></body></html>"))
+                self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
+                self.IntelligentHealthInc.setStyleSheet("font-weight: bold; padding-top: 5px; color: navy; font-family: Arial; font-size: 22px")
                 self.Status.setText(_translate("MainWindow", "Status:"))
                 self.DateofBirth.setText(_translate("MainWindow", "Date of Birth: "))
                 self.RecordID.setText(_translate("MainWindow", "Record ID: "))
-                self.PatientName.setText(_translate("MainWindow", "Patient Name:"))
+                self.PatientName.setText(_translate("MainWindow", "Name:"))
                 self.PatientID.setText(_translate("MainWindow", "Patient ID: "))
                 self.Age.setText(_translate("MainWindow", "Age:"))
                 self.Modality.setText(_translate("MainWindow", "Modality"))

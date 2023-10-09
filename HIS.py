@@ -1,9 +1,9 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import mysql.connector
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtCore import pyqtSignal
 
-class Ui_MainWindow(object):
+class Ui_HISWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1246, 721)
@@ -33,10 +33,7 @@ class Ui_MainWindow(object):
         self.label.setStyleSheet("background-image: url(./background.png);")
         self.label.setText("")
         self.label.setObjectName("label")
-        self.ToHome = QtWidgets.QPushButton(self.centralwidget)
-        self.ToHome.setGeometry(QtCore.QRect(1000, 110, 75, 28))
-        self.ToHome.setObjectName("ToHome")
-
+        
         self.searchBar = QLineEdit(self.centralwidget)
         self.searchBar.setGeometry(QtCore.QRect(20, 100, 200, 25))
         self.searchBar.setPlaceholderText("Search...")
@@ -60,7 +57,15 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+        
+        # Action added, when click 'Add' button
+        self.connectButton = QtWidgets.QPushButton(self.centralwidget)
+        self.connectButton.setGeometry(QtCore.QRect(10, 590, 131, 41))
+        self.connectButton.setText("Add")
+        self.connectButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
+        # Connect the button's clicked signal to your custom method
+        self.connectButton.clicked.connect(self.on_Add_click)
+        
     def connect_to_database(self):
         try:
             self.db = mysql.connector.connect(
@@ -136,59 +141,21 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("HIS", "HIS"))
         self.Back.setText(_translate("MainWindow", "Back"))
         self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
         self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
         self.IntelligentHealthInc.setStyleSheet("padding-top: 5px; color: navy; font-family: Arial; font-size: 22px; font-weight: bold;")
-        self.ToHome.setText(_translate("MainWindow", "Add"))
-        self.ToHome.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
     
-    def showAddInfoButton(self):
-        # Show the "Add Info" button when any checkbox is checked
-        for row_num in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
-            if item and item.checkState() == QtCore.Qt.Checked:
-                self.add_info_button.show()
-                return
-        # Hide the button if no checkbox is checked
-        self.add_info_button.hide()
-    
-    def on_add_button_click(self):
-        
-        selected_rows = []
-
-        # Iterate through the rows and collect data from selected rows
-        for row_num in range(self.tableWidget.rowCount()):
-            item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
-            if item and item.checkState() == QtCore.Qt.Checked:
-                ###############################################################################
-                # 1. Add columns
-                # 2. Change MainWindow name(Currently home.py and HIS.py class share the same main window obj name)
-                # 3. Change main() at the bottom
-                # 4. Test sending data
-                # 5. At home.py, add 'Reload' button
-                record_id = self.tableWidget.item(row_num, 1).text()  # Replace with the correct column index
-                patient_name = self.tableWidget.item(row_num, 2).text()  # Replace with the correct column index
-                patient_id = self.tableWidget.item(row_num, 3).text()  # Replace with the correct column index
-                age = self.tableWidget.item(row_num, 4).text()  # Replace with the correct column index
-                dob = self.tableWidget.item(row_num, 5).text()  # Replace with the correct column index
-                selected_rows.append((record_id, patient_name, patient_id, age, dob))
-
-        # Emit the signal with the selected data
-        if selected_rows:
-            for data in selected_rows:
-                self.data_signal.emit(data[0], data[1], data[2], data[3], data[4])
-            print("Selected data was successfully sent to main dashboard")
-        else:
-            print("No data selected to send.")
-            
+    def on_Add_click(self):
+        print("Delivering data...")
+        sys.exit(app.exec_())
             
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
+    ui = Ui_HISWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
