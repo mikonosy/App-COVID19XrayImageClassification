@@ -1,12 +1,13 @@
 from PyQt5 import QtCore, QtWidgets
 import mysql.connector
 from PyQt5.QtCore import Qt, QDateTime, pyqtSignal
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QAbstractItemView, QCalendarWidget, QTimeEdit
+from PyQt5.QtWidgets import QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView, QCalendarWidget, QTimeEdit
 import subprocess
 import os
 import sys
+from HIS import Ui_HISWindow
 
-class Ui_HomeWindow(object):
+class Ui_HomeWindow(QMainWindow):
     def connect_to_database(self):
         try:
             self.db = mysql.connector.connect(
@@ -61,7 +62,7 @@ class Ui_HomeWindow(object):
         # Create the "Reload" button
         self.reload_button = QtWidgets.QPushButton(self.centralwidget)
         self.reload_button.setGeometry(QtCore.QRect(150, 590, 131, 41))
-        # self.reload_button.clicked.connect(self.on_reload_button_click)
+        self.reload_button.clicked.connect(self.on_reload_button_click)
         ##################################################
         
         # Inside the `setupUi` method of the `Ui_HomeWindow` class, add the following code to create the logout button:
@@ -156,48 +157,18 @@ class Ui_HomeWindow(object):
 
         # Connect the cellClicked signal to your custom method
         self.tableWidget.cellClicked.connect(self.on_cell_click)
-    
-    # def on_reload_button_click(self):
-    # # Your code to fetch selected rows and data goes here
-    #     selected_rows = []
-
-    #     # Iterate through the rows and collect data from selected rows
-    #     for row_num in range(self.tableWidget.rowCount()):
-    #         item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
-    #         if item and item.checkState() == QtCore.Qt.Checked:
-    #             # Extract data from selected rows (modify as needed)
-    #             patient_name = self.tableWidget.item(row_num, 1).text()
-    #             patient_id = self.tableWidget.item(row_num, 2).text()
-    #             dob = self.tableWidget.item(row_num, 3).text()
-    #             modality = self.tableWidget.item(row_num, 4).text()
-
-    #             # Add the data to your selected_rows list
-    #             selected_rows.append((patient_name, patient_id, dob, modality))
-
-    
-    # def handle_selected_data(self, patient_name, patient_id, dob, modality):
-
-    #     # Create a new row in the table widget to display the received data
-    #     row_position = self.tableWidget.rowCount()
-    #     self.tableWidget.insertRow(row_position)
-
-    #     # Set the data in the table widget's cells
-    #     self.tableWidget.setItem(row_position, 0, QTableWidgetItem(""))
-    #     self.tableWidget.setItem(row_position, 1, QTableWidgetItem(patient_name))
-    #     self.tableWidget.setItem(row_position, 2, QTableWidgetItem(patient_id))
-    #     self.tableWidget.setItem(row_position, 3, QTableWidgetItem("")) 
-    #     self.tableWidget.setItem(row_position, 4, QTableWidgetItem(dob))
-    #     self.tableWidget.setItem(row_position, 5, QTableWidgetItem(modality))
-    #     self.tableWidget.setItem(row_position, 6, QTableWidgetItem(""))  
-    #     self.tableWidget.setItem(row_position, 7, QTableWidgetItem(""))  
-    #     self.tableWidget.setItem(row_position, 8, QTableWidgetItem(""))  
-
-    #     # You can also add the "Emergency" button to the new row if needed
-    #     emergency_button = QtWidgets.QPushButton("Emergency")
-    #     emergency_button.clicked.connect(lambda _, row=row_position: self.on_emergency_button_click(row))
-    #     self.tableWidget.setCellWidget(row_position, 9, emergency_button)
-    #     self.update_button_text(row_position, "Emergency")
-
+                
+    def on_reload_button_click(self):
+        
+        his_ui = Ui_HISWindow()
+                
+        selected_data = his_ui.on_Add_click()  
+        if selected_data:
+            print("Selected Data from HIS:")
+            for row in selected_data:
+                print(row)
+        else:
+            print("No rows selected.")
         
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

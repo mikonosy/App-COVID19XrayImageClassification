@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtCore import pyqtSignal
 
 class Ui_HISWindow(object):
+        
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1246, 721)
@@ -148,9 +149,50 @@ class Ui_HISWindow(object):
         self.IntelligentHealthInc.setStyleSheet("padding-top: 5px; color: navy; font-family: Arial; font-size: 22px; font-weight: bold;")
     
     def on_Add_click(self):
+        selected_rows = []  # To store the selected row indices
+        for row_num in range(self.tableWidget.rowCount()):
+            checkbox_item = self.tableWidget.item(row_num, 0)
+            if checkbox_item and checkbox_item.checkState() == QtCore.Qt.Checked:
+                selected_rows.append(row_num)
+
+        if not selected_rows:
+            print("No rows selected.")
+            return []
+
+        try:
+            # Connect to the database inside this method
+            db = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="Wls940207^^",
+                database="fyp"
+            )
+
+            if db.is_connected():
+                print("Connected to the MySQL database")
+
+                with db.cursor() as cursor:
+                    selected_data = []
+                    for row_num in selected_rows:
+                        row_data = []
+                        for col_num in range(1, self.tableWidget.columnCount()):
+                            item = self.tableWidget.item(row_num, col_num)
+                            if item:
+                                row_data.append(item.text())
+                        selected_data.append(row_data)
+                        # Store the selected data in the attribute
+                        self.selected_data = selected_data
+
+        except mysql.connector.Error as err:
+            print(f"Error executing query: {err}")
+        finally:
+            # Close the database connection when done
+            db.close()
+
         print("Delivering data...")
-        sys.exit(app.exec_())
-            
+        print(selected_data)
+        return selected_data
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
