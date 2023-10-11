@@ -2,7 +2,7 @@ import sys
 import os
 import pydicom
 import numpy as np
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from keras.models import load_model
 from PyQt5 import QtCore, QtGui, QtWidgets
 import cv2
@@ -11,7 +11,8 @@ from PyQt5.QtGui import QPixmap
 import os
 import subprocess
 import time
-
+import mysql.connector
+from datetime import datetime
 
 class Ui_MainWindow(object):
         def __init__(self, record_id,patient_name, patient_id, age, dob, modality, request_time, notes, status):
@@ -25,6 +26,51 @@ class Ui_MainWindow(object):
                 self.request_time = request_time
                 self.notes = notes
                 self.status = status
+
+        def connect_to_database(self):
+                try:
+                        self.db = mysql.connector.connect(
+                                host="localhost",
+                                user="root",
+                                password="Wls940207^^",
+                                database="fyp"
+                        )
+                        if self.db.is_connected():
+                                print("Connected to the MySQL database")
+                except mysql.connector.Error as err:
+                        print(f"Error: {err}")
+
+        def on_click_Update(self):
+                
+                self.connect_to_database()
+                cursor = self.db.cursor()
+                
+                record_id = self.record_id
+                image = ""
+                predicted = ""
+                user_input = self.plainTextEdit.toPlainText()
+                notes = f"Image taken, {user_input}"
+                upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                image_filename = ""
+                
+                insert_sql = """INSERT INTO medicaltech_image_record
+                                (record_id_id, image, prediction, notes, upload_date, image_filename)
+                                VALUES(%s, %s, %s, %s, %s, %s)"""
+                data_to_insert = (record_id, image, predicted, notes, upload_date, image_filename)
+                cursor.execute(insert_sql, data_to_insert)
+                
+                update_sql = """UPDATE medicaltech_image_record
+                                SET record_id_id = %s,
+                                image = %s,
+                                prediction = %s,
+                                notes = %s,
+                                upload_date = %s,
+                                image_filename = %s
+                                WHERE record_id_id = %s"""
+    
+                data_to_update = (record_id, image, predicted, notes, upload_date, image_filename, record_id)
+                cursor.execute(update_sql, data_to_update)
+                QtWidgets.QMessageBox.information(self.centralwidget, "Result", "Patient record updated.")
 
         def setupUi(self, MainWindow):
                 MainWindow.setObjectName("MainWindow")
@@ -113,9 +159,10 @@ class Ui_MainWindow(object):
                 self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
                 self.plainTextEdit.setGeometry(QtCore.QRect(860, 470, 221, 41))
                 self.plainTextEdit.setObjectName("plainTextEdit")
-                self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-                self.pushButton.setGeometry(QtCore.QRect(630, 800, 161, 28))
-                self.pushButton.setObjectName("pushButton")
+                self.updateButton = QtWidgets.QPushButton(self.centralwidget)
+                self.updateButton.setGeometry(QtCore.QRect(630, 800, 161, 28))
+                self.updateButton.setObjectName("updateButton")
+                self.updateButton.clicked.connect(self.on_click_Update)  # Connect the button click event to on_click_Update method
                 MainWindow.setCentralWidget(self.centralwidget)
                 self.menubar = QtWidgets.QMenuBar(MainWindow)
                 self.menubar.setGeometry(QtCore.QRect(0, 0, 1243, 26))
@@ -154,7 +201,7 @@ class Ui_MainWindow(object):
                 self.retranslateUi(MainWindow)
                 QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-                self.pushButton.clicked.connect(lambda: self.go_back(MainWindow))
+                # self.updateButton.clicked.connect(lambda: self.go_back(MainWindow))
 
 
         def updatePatientInfo(self):
@@ -188,9 +235,9 @@ class Ui_MainWindow(object):
                 self.UpcomingAppointment.setText(_translate("MainWindow", "Upcoming Appointment"))
                 self.RequestTime.setText(_translate("MainWindow", "Request Time:"))
                 self.Notes.setText(_translate("MainWindow", "Notes"))
-                self.pushButton.setText(_translate("MainWindow", "Update"))
-                self.pushButton.setGeometry(QtCore.QRect(1020, 790, 93, 28))
-                self.pushButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
+                self.updateButton.setText(_translate("MainWindow", "Update"))
+                self.updateButton.setGeometry(QtCore.QRect(1020, 790, 93, 28))
+                self.updateButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
 
 
         def uploadDICOM(self):
