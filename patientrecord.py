@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QFileDialog
 from keras.models import load_model
 from PyQt5 import QtCore, QtGui, QtWidgets
 import cv2
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import os
 import subprocess
@@ -41,17 +42,18 @@ class Ui_MainWindow(object):
                 self.Banner.setObjectName("Banner")
                 # Add these lines to the `setupUi` method in `patientrecord.py`
                 self.backButton = QtWidgets.QPushButton(self.Banner)
-                self.backButton.setGeometry(QtCore.QRect(1000, 20, 151, 41))
-                self.backButton.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
+                self.backButton.setGeometry(QtCore.QRect(1020, 20, 151, 41))
+                self.backButton.setStyleSheet("color: navy; font-family: Arial; font-size: 1pt; border: none;")
                 self.backButton.setText("Back")
+                self.backButton.setCursor(Qt.PointingHandCursor)
                 self.backButton.clicked.connect(self.go_back)  # Connect the button click event to go_back method
                 self.Logo = QtWidgets.QLabel(self.Banner)
-                self.Logo.setGeometry(QtCore.QRect(0, 10, 100, 61))
+                self.Logo.setGeometry(QtCore.QRect(0, 10, 110, 61))
                 self.Logo.setStyleSheet("image: url(./logo-removebg-preview.png);")
                 self.Logo.setText("")
                 self.Logo.setObjectName("Logo")
                 self.IntelligentHealthInc = QtWidgets.QLabel(self.Banner)
-                self.IntelligentHealthInc.setGeometry(QtCore.QRect(100, 5, 161, 71))
+                self.IntelligentHealthInc.setGeometry(QtCore.QRect(90, 5, 161, 71))
                 self.IntelligentHealthInc.setStyleSheet("font: 18pt \"MS Shell Dlg 2\";\n"
                 "color: #0000FF")
                 self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
@@ -93,7 +95,7 @@ class Ui_MainWindow(object):
                 self.tableView.setStyleSheet("background-color: rgb(227, 236, 250);")
                 self.tableView.setObjectName("tableView")
                 self.UpcomingAppointment = QtWidgets.QLabel(self.centralwidget)
-                self.UpcomingAppointment.setGeometry(QtCore.QRect(630, 130, 181, 16))
+                self.UpcomingAppointment.setGeometry(QtCore.QRect(620, 130, 181, 16))
                 self.UpcomingAppointment.setObjectName("UpcomingAppointment")
                 self.RequestTime = QtWidgets.QLabel(self.centralwidget)
                 self.RequestTime.setGeometry(QtCore.QRect(850, 190, 111, 16))
@@ -106,13 +108,13 @@ class Ui_MainWindow(object):
                 self.tableWidget.setColumnCount(0)
                 self.tableWidget.setRowCount(0)
                 self.Notes = QtWidgets.QLabel(self.centralwidget)
-                self.Notes.setGeometry(QtCore.QRect(810, 440, 55, 16))
+                self.Notes.setGeometry(QtCore.QRect(810, 440, 55, 50))
                 self.Notes.setObjectName("Notes")
                 self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
                 self.plainTextEdit.setGeometry(QtCore.QRect(860, 470, 221, 41))
                 self.plainTextEdit.setObjectName("plainTextEdit")
                 self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-                self.pushButton.setGeometry(QtCore.QRect(630, 850, 161, 28))
+                self.pushButton.setGeometry(QtCore.QRect(630, 800, 161, 28))
                 self.pushButton.setObjectName("pushButton")
                 MainWindow.setCentralWidget(self.centralwidget)
                 self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -170,6 +172,9 @@ class Ui_MainWindow(object):
         def retranslateUi(self, MainWindow):
                 _translate = QtCore.QCoreApplication.translate
                 MainWindow.setWindowTitle(_translate("Patient Record", "Patient Record"))
+                self.backButton.setText(_translate("MainWindow", "Back"))
+                self.backButton.setStyleSheet("font-family: Arial; font-size: 22px; color: navy; border: none; font-weight: bold")
+                self.backButton.setStyleSheet("font-family: Arial; font-size: 22px; color: navy; border: none; font-weight: bold")
                 self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
                 self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
                 self.IntelligentHealthInc.setStyleSheet("font-weight: bold; padding-top: 5px; color: navy; font-family: Arial; font-size: 22px")
@@ -184,6 +189,8 @@ class Ui_MainWindow(object):
                 self.RequestTime.setText(_translate("MainWindow", "Request Time:"))
                 self.Notes.setText(_translate("MainWindow", "Notes"))
                 self.pushButton.setText(_translate("MainWindow", "Update"))
+                self.pushButton.setGeometry(QtCore.QRect(1020, 790, 93, 28))
+                self.pushButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
 
 
         def uploadDICOM(self):

@@ -1,13 +1,12 @@
 from PyQt5 import QtCore, QtWidgets
 import mysql.connector
-from PyQt5.QtCore import Qt, QDateTime, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView, QCalendarWidget, QTimeEdit
+from PyQt5.QtCore import Qt, QDateTime
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QAbstractItemView, QCalendarWidget, QTimeEdit
 import subprocess
 import os
 import sys
-from HIS import Ui_HISWindow
 
-class Ui_HomeWindow(QMainWindow):
+class Ui_MainWindow(object):
     def connect_to_database(self):
         try:
             self.db = mysql.connector.connect(
@@ -57,18 +56,10 @@ class Ui_HomeWindow(QMainWindow):
         self.Banner.setGeometry(QtCore.QRect(0, 0, 1251, 80))
         self.Banner.setStyleSheet("background-color: rgb(227, 236, 250);")
         self.Banner.setObjectName("Banner")
-        
-        ##################################################
-        # Create the "Reload" button
-        self.reload_button = QtWidgets.QPushButton(self.centralwidget)
-        self.reload_button.setGeometry(QtCore.QRect(150, 590, 131, 41))
-        self.reload_button.clicked.connect(self.on_reload_button_click)
-        ##################################################
-        
-        # Inside the `setupUi` method of the `Ui_HomeWindow` class, add the following code to create the logout button:
+        # Inside the `setupUi` method of the `Ui_MainWindow` class, add the following code to create the logout button:
         self.logoutButton = QtWidgets.QPushButton(self.Banner)
-        self.logoutButton.setGeometry(QtCore.QRect(990, 20, 151, 41))
-        self.logoutButton.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
+        self.logoutButton.setGeometry(QtCore.QRect(1070, 20, 151, 41))
+        self.logoutButton.setStyleSheet("color: navy; font-family: Arial; font-size: 1pt; border: none;")
         self.logoutButton.setText("Logout")
         self.logoutButton.setCursor(Qt.PointingHandCursor)
         self.logoutButton.clicked.connect(self.logout)
@@ -78,11 +69,10 @@ class Ui_HomeWindow(QMainWindow):
         self.Logo.setText("")
         self.Logo.setObjectName("Logo")
         self.IntelligentHealthInc = QtWidgets.QLabel(self.Banner)
-        self.IntelligentHealthInc.setGeometry(QtCore.QRect(100, 5, 161, 71))
+        self.IntelligentHealthInc.setGeometry(QtCore.QRect(90, 10, 161, 71))
         self.IntelligentHealthInc.setStyleSheet("font: 18pt \"MS Shell Dlg 2\";\n"
-                                        "color: #0000FF;\n"
-                                        "font-size: 12pt;")
-        self.IntelligentHealthInc.setObjectName("Intelligent HealthInc")
+                                                "color: #0000FF")
+        self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(-10, 80, 1261, 491))
         self.label.setStyleSheet("background-image: url(./background.png);")
@@ -91,7 +81,7 @@ class Ui_HomeWindow(QMainWindow):
         MainWindow.setCentralWidget(self.centralwidget)
         # Create the HIS button
         self.HISbutton = QtWidgets.QPushButton(self.centralwidget)
-        self.HISbutton.setGeometry(QtCore.QRect(1025, 95, 93, 36))
+        self.HISbutton.setGeometry(QtCore.QRect(1100, 95, 93, 36))
         self.HISbutton.setObjectName("pushButton")
 
         # Connect the HIS button's clicked signal to the open_his_page method
@@ -110,7 +100,7 @@ class Ui_HomeWindow(QMainWindow):
 
         # Add a new column header for the Emergency button
         self.tableWidget.setColumnCount(10)
-        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Name", "Patient ID", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
+        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Patient Name", "Patient", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
         # Set the table to non-editable
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
@@ -121,7 +111,7 @@ class Ui_HomeWindow(QMainWindow):
         self.connectButton = QtWidgets.QPushButton(self.centralwidget)
         self.connectButton.setGeometry(QtCore.QRect(10, 590, 131, 41))
         self.connectButton.setText("Fetch Data")
-        
+
         # Connect the button's clicked signal to your custom method
         self.connectButton.clicked.connect(self.on_button_click)
 
@@ -151,36 +141,24 @@ class Ui_HomeWindow(QMainWindow):
 
         # Add a new column header for the Emergency button
         self.tableWidget.setColumnCount(10)
-        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Name", "Patient ID", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
+        self.tableWidget.setHorizontalHeaderLabels(["Record ID", "Patient Name", "Patient", "Age", "Date of Birth", "Modality", "Request Time", "Notes", "Status", "Emergency"])
         # Set the table to non-editable
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Connect the cellClicked signal to your custom method
         self.tableWidget.cellClicked.connect(self.on_cell_click)
-                
-    def on_reload_button_click(self):
-        
-        his_ui = Ui_HISWindow()
-                
-        selected_data = his_ui.on_Add_click()  
-        if selected_data:
-            print("Selected Data from HIS:")
-            for row in selected_data:
-                print(row)
-        else:
-            print("No rows selected.")
-        
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("Home", "Home"))
         self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
         self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
         self.IntelligentHealthInc.setStyleSheet("font-weight: bold; padding-top: 5px; color: navy; font-family: Arial; font-size: 22px")
+        self.logoutButton.setText(_translate("MainWindow", "Logout"))
+        self.logoutButton.setStyleSheet("font-family: Arial; font-size: 22px; color: navy; border: none; font-weight: bold")
         self.HISbutton.setText(_translate("MainWindow", "To HIS"))
         self.HISbutton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
-        self.reload_button.setText(_translate("MainWindow", "Reload"))
-        self.reload_button.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
-        
+
     # For example, connect to the database and fetch data when a button is clicked
     def on_button_click(self):
         self.connect_to_database()
@@ -269,8 +247,18 @@ class Ui_HomeWindow(QMainWindow):
             # Construct the path to HIS.py
             his_script_path = os.path.join(current_directory, "HIS.py")
 
+            # Check the platform (macOS or Windows)
+            if sys.platform == 'darwin':
+                # This is macOS, so use the "python3" interpreter (or your specific Python version)
+                python_interpreter = "python3"
+            else:
+                # This is not macOS, so use the "python" interpreter
+                python_interpreter = "python"
+
+            # Close the current window (MainWindow)
+            MainWindow.close()
             # Launch HIS.py
-            subprocess.Popen(["python", his_script_path])
+            subprocess.Popen([python_interpreter, his_script_path])
         except Exception as e:
             print("Error opening HIS.py:", str(e))
 
@@ -282,11 +270,20 @@ class Ui_HomeWindow(QMainWindow):
             # Construct the path to patientrecord.py
             patient_record_script_path = os.path.join(current_directory, "patientrecord.py")
 
+            # Check the platform (macOS or Windows)
+            if sys.platform == 'darwin':
+                # This is macOS, so use the "python3" interpreter (or your specific Python version)
+                python_interpreter = "python3"
+            else:
+                # This is not macOS, so use the "python" interpreter
+                python_interpreter = "python"
+
             # Close the current window (MainWindow)
             MainWindow.close()
 
             # Launch patientrecord.py and pass the necessary information as arguments
-            subprocess.Popen(["python", patient_record_script_path, record_id, patient_name, patient_id, age, dob, modality, request_time, notes, status])
+            subprocess.Popen([python_interpreter, patient_record_script_path, record_id, patient_name, patient_id, age, dob, modality, request_time, notes, status])            
+        
         except Exception as e:
             print("Error navigating to patientrecord.py:", str(e))
 
@@ -306,8 +303,19 @@ class Ui_HomeWindow(QMainWindow):
             # Navigate to the login.py file (assuming it's in the same directory)
             login_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "login.py")
 
+            # Check the platform (macOS or Windows)
+            if sys.platform == 'darwin':
+                # This is macOS, so use the "python3" interpreter (or your specific Python version)
+                python_interpreter = "python3"
+            else:
+                # This is not macOS, so use the "python" interpreter
+                python_interpreter = "python"
+
+            # Close the current window (MainWindow)
+            MainWindow.close()
             # Launch login.py
-            subprocess.Popen(["python", login_script_path])
+            subprocess.Popen([python_interpreter, login_script_path])
+            
         except Exception as e:
             print("Error navigating to login.py:", str(e))
 
@@ -359,12 +367,11 @@ class Ui_HomeWindow(QMainWindow):
         def change_status(new_status):
             with open("status.txt", "w") as file:
                 file.write(new_status)
-        
-        
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_HomeWindow()
+    ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())

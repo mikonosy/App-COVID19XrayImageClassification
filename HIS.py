@@ -1,10 +1,15 @@
 from PyQt5 import QtCore, QtWidgets
 import mysql.connector
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit
-from PyQt5.QtCore import pyqtSignal
+from datetime import datetime
+import uuid
+import atexit
+import os
+import subprocess
+import sys
 
-class Ui_HISWindow(object):
-        
+class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1246, 721)
@@ -14,27 +19,39 @@ class Ui_HISWindow(object):
         self.Banner.setGeometry(QtCore.QRect(0, 0, 1251, 80))
         self.Banner.setStyleSheet("background-color: rgb(227, 236, 250);")
         self.Banner.setObjectName("Banner")
-        self.Back = QtWidgets.QLabel(self.Banner)
-        self.Back.setGeometry(QtCore.QRect(1000, 20, 151, 41))
-        self.Back.setStyleSheet("color: navy; font-family: Arial; font-size: 14pt; border: none;")
+        self.Back = QtWidgets.QPushButton(self.Banner)
+        self.Back.setGeometry(QtCore.QRect(950, 20, 151, 41))
+        self.Back.setStyleSheet("color: navy; font-family: Arial; font-size: 1pt; border: none;")
         self.Back.setObjectName("Back")
+        self.Back.setText("Back")
+        self.Back.setCursor(Qt.PointingHandCursor)
+        self.Back.clicked.connect(self.switch_to_home_page)  # Connect the button to your function
+
+
         self.Logo = QtWidgets.QLabel(self.Banner)
         self.Logo.setGeometry(QtCore.QRect(0, 10, 110, 61))
         self.Logo.setStyleSheet("image: url(./logo-removebg-preview.png);")
         self.Logo.setText("")
         self.Logo.setObjectName("Logo")
         self.IntelligentHealthInc = QtWidgets.QLabel(self.Banner)
-        self.IntelligentHealthInc.setGeometry(QtCore.QRect(100, 5, 161, 71))
+        self.IntelligentHealthInc.setGeometry(QtCore.QRect(90, 5, 161, 71))
         self.IntelligentHealthInc.setStyleSheet("font: 18pt \"MS Shell Dlg 2\";\n"
-                                        "color: #0000FF;\n"
-                                        "font-size: 12pt;")
-        self.IntelligentHealthInc.setObjectName("Intelligent HealthInc")
+                                                "color: #0000FF")
+        self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(-20, 80, 1261, 491))
         self.label.setStyleSheet("background-image: url(./background.png);")
         self.label.setText("")
         self.label.setObjectName("label")
         
+        self.addInfoButton = QtWidgets.QPushButton(self.centralwidget)
+        self.addInfoButton.setGeometry(QtCore.QRect(980, 110, 93, 28))
+        self.addInfoButton.setObjectName("addInfoButton")
+        self.addInfoButton.setText("Add Info")
+        self.addInfoButton.clicked.connect(self.add_info_to_database)
+        self.addInfoButton.clicked.connect(self.switch_for_addinfo)  # Connect the button to your function
+
+
         self.searchBar = QLineEdit(self.centralwidget)
         self.searchBar.setGeometry(QtCore.QRect(20, 100, 200, 25))
         self.searchBar.setPlaceholderText("Search...")
@@ -58,15 +75,7 @@ class Ui_HISWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
-        # Action added, when click 'Add' button
-        self.connectButton = QtWidgets.QPushButton(self.centralwidget)
-        self.connectButton.setGeometry(QtCore.QRect(10, 590, 131, 41))
-        self.connectButton.setText("Add")
-        self.connectButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
-        # Connect the button's clicked signal to your custom method
-        self.connectButton.clicked.connect(self.on_Add_click)
-        
+
     def connect_to_database(self):
         try:
             self.db = mysql.connector.connect(
@@ -121,9 +130,7 @@ class Ui_HISWindow(object):
 
         except mysql.connector.Error as err:
             print(f"Error executing query: {err}")
-        finally:
-            self.db.close()
-            
+
     def filter_table(self):
         # Get the search query from the search bar
         search_query = self.searchBar.text()
@@ -144,60 +151,144 @@ class Ui_HISWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("HIS", "HIS"))
         self.Back.setText(_translate("MainWindow", "Back"))
+        self.Back.setStyleSheet("font-family: Arial; font-size: 22px; color: navy; border: none; font-weight: bold")
         self.IntelligentHealthInc.setWhatsThis(_translate("MainWindow", "<html><head/><body><p>Intelligent<br/>Health Inc.</p></body></html>"))
         self.IntelligentHealthInc.setText(_translate("MainWindow", "<html><head/><body><p>INTELLIGENT<br/>HEALTH INC.</p></body></html>"))
-        self.IntelligentHealthInc.setStyleSheet("padding-top: 5px; color: navy; font-family: Arial; font-size: 22px; font-weight: bold;")
-    
-    def on_Add_click(self):
-        selected_rows = []  # To store the selected row indices
+        self.IntelligentHealthInc.setStyleSheet("font-weight: bold; padding-top: 5px; color: navy; font-family: Arial; font-size: 22px")
+        self.addInfoButton.setText(_translate("MainWindow", "Add Info"))    
+        self.addInfoButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
+
+    def showAddInfoButton(self):
+        # Show the "Add Info" button when any checkbox is checked
         for row_num in range(self.tableWidget.rowCount()):
-            checkbox_item = self.tableWidget.item(row_num, 0)
-            if checkbox_item and checkbox_item.checkState() == QtCore.Qt.Checked:
-                selected_rows.append(row_num)
+            print(row_num)
+            item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
+            if item and item.checkState() == QtCore.Qt.Checked:
+                self.add_info_button.show()
+                return
+        # Hide the button if no checkbox is checked
+        self.add_info_button.hide()
+
+    def calculate_age(self, date_of_birth):
+        # Convert the date_of_birth string to a datetime.date object
+        date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+
+        today = datetime.today().date()
+        age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+        return age
+    
+    def add_info_to_database(self):
+        # Get selected rows and their data
+        selected_rows = []
+        for row_num in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
+            if item and item.checkState() == QtCore.Qt.Checked:
+                selected_row_data = [self.tableWidget.item(row_num, col_num).text() for col_num in range(1, self.tableWidget.columnCount())]
+                selected_rows.append(selected_row_data)
 
         if not selected_rows:
-            print("No rows selected.")
-            return []
+            print(selected_rows)
+            QtWidgets.QMessageBox.information(self.centralwidget, "Information", "No rows selected.")
+            return
 
+        # Reuse the existing database connection
         try:
-            # Connect to the database inside this method
-            db = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="Wls940207^^",
-                database="fyp"
-            )
+            with self.db.cursor() as cursor:
+                for row_data in selected_rows:
+                    patient_ID = row_data[0]  # Patient ID (column 3)
+                    patient_name = row_data[1]  # Patient Name (column 2)
+                    date_of_birth = row_data[2]  # Date of Birth (column 5)
 
-            if db.is_connected():
-                print("Connected to the MySQL database")
+                    # Need to calculate age
+                    age = self.calculate_age(date_of_birth)
+                    
+                    modality = 'CXR'  # Modality (column 6)
+                    request_time = None  # Set request_time to NULL
+                    
+                    status = 'pending'  # Status (column 9)
 
-                with db.cursor() as cursor:
-                    selected_data = []
-                    for row_num in selected_rows:
-                        row_data = []
-                        for col_num in range(1, self.tableWidget.columnCount()):
-                            item = self.tableWidget.item(row_num, col_num)
-                            if item:
-                                row_data.append(item.text())
-                        selected_data.append(row_data)
-                        # Store the selected data in the attribute
-                        self.selected_data = selected_data
+                    gender = row_data[3]  # Gender (column 5)
+                    area = row_data[7]  # Area (column 8)
+                    nationality = row_data[10]  # Nationality (column 11)
+                
+                    unique_record_id = f"CXR{uuid.uuid4().int % 100000:05d}"
 
+                    # Use the unique_record_id in your INSERT statement
+                    sql_query = (
+                        "INSERT INTO medicaltech_radiologyrecord "
+                        "(record_id, patient_name, patient_ID, age, date_of_birth, modality, request_time, status, nationality, area, gender) "
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    )
+                    cursor.execute(sql_query, (unique_record_id, patient_name, patient_ID, age, date_of_birth, modality, request_time, status, nationality, area, gender))
+                    
+                    print(patient_name)
+                    print(nationality)
+                    print(area)
+                self.db.commit()
         except mysql.connector.Error as err:
-            print(f"Error executing query: {err}")
-        finally:
-            # Close the database connection when done
-            db.close()
+            print(f"Error adding data to the database: {err}")
 
-        print("Delivering data...")
-        print(selected_data)
-        return selected_data
+        QtWidgets.QMessageBox.information(self.centralwidget, "Information", "Selected rows added to the database.")
+
+    def close_database_connection(self):
+        if hasattr(self, 'db') and self.db.is_connected():
+            self.db.close()
+            print("Database connection closed")
+    
+    def switch_to_home_page(self):
+        try:
+            MainWindow.close()
+
+            # Get the directory of the current script (this script)
+            current_directory = os.path.dirname(os.path.abspath(__file__))
+
+            # Construct the path to home.py
+            home_script_path = os.path.join(current_directory, "home.py")
+
+            # Check the platform (macOS or Windows)
+            if sys.platform == 'darwin':
+                # This is macOS, so use the "python3" interpreter (or your specific Python version)
+                python_interpreter = "python3"
+            else:
+                # This is not macOS, so use the "python" interpreter
+                python_interpreter = "python"
+
+            # Launch home.py
+            subprocess.Popen([python_interpreter, home_script_path])
+        except Exception as e:
+            print("Error opening home.py:", str(e))
+    
+    def switch_for_addinfo(self):
+        # Check if any rows are selected
+        for row_num in range(self.tableWidget.rowCount()):
+            item = self.tableWidget.item(row_num, 0)  # Checkbox is in the first column
+            if item and item.checkState() == QtCore.Qt.Checked:
+                try:
+                    MainWindow.close()
+                    # Get the directory of the current script (this script)
+                    current_directory = os.path.dirname(os.path.abspath(__file__))
+                    # Construct the path to home.py
+                    home_script_path = os.path.join(current_directory, "home.py")
+                    # Check the platform (macOS or Windows)
+                    if sys.platform == 'darwin':
+                        # This is macOS, so use the "python3" interpreter (or your specific Python version)
+                        python_interpreter = "python3"
+                    else:
+                        # This is not macOS, so use the "python" interpreter
+                        python_interpreter = "python"
+                    # Launch home.py
+                    subprocess.Popen([python_interpreter, home_script_path])
+                except Exception as e:
+                    print("Error opening home.py:", str(e))
+                return  # Exit the function if rows are selected
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_HISWindow()
+    ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
+
+    atexit.register(ui.close_database_connection)  # Register the function to close the database connection
     MainWindow.show()
     sys.exit(app.exec_())
