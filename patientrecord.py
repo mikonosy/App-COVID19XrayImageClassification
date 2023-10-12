@@ -2,17 +2,18 @@ import sys
 import os
 import pydicom
 import numpy as np
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog
 from keras.models import load_model
 from PyQt5 import QtCore, QtGui, QtWidgets
 import cv2
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 import os
 import subprocess
 import time
 import mysql.connector
-from datetime import datetime
+from datetime import datetime  # Corrected import for datetime
+
 
 class Ui_MainWindow(object):
         def __init__(self, record_id,patient_name, patient_id, age, dob, modality, request_time, notes, status):
@@ -41,36 +42,97 @@ class Ui_MainWindow(object):
                         print(f"Error: {err}")
 
         def on_click_Update(self):
-                
                 self.connect_to_database()
                 cursor = self.db.cursor()
-                
+
                 record_id = self.record_id
-                image = ""
-                predicted = ""
-                user_input = self.plainTextEdit.toPlainText()
-                notes = f"Image taken, {user_input}"
-                upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                image_filename = ""
+                image = self.dicomImageLabel.pixmap().toImage()  # Convert the QPixmap to QImage
+                # Save the QImage as a temporary file
+                temp_file_path = "temp_image.png"  # You can use a temporary file path
+                image.save(temp_file_path)
                 
+                # Read the binary data from the temporary file
+                with open(temp_file_path, 'rb') as file:
+                        image_bytes = file.read()                
+                predicted = self.predictionLabel.text()
+                prediction_words = predicted.split(' ')                
+                result = prediction_words[1]
+                
+                print(self.Notes)
+                if self.plainTextEdit.toPlainText() == "":
+                        print("I dont wanna be here")
+                        notes = "Image taken, No Notes"
+                else:
+                        print("I was here")
+                        notes = self.plainTextEdit.toPlainText()
+
+                upload_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")  # Include microseconds
+                
+                image_record = self.FilenameLabel.text()  # You should set the image_record to the actual filename or path
+                filename = os.path.basename(image_record)
+                fName = filename.split(' ')                
+                image_name = fName[1]
+
+                print(image_name)
                 insert_sql = """INSERT INTO medicaltech_image_record
                                 (record_id_id, image, prediction, notes, upload_date, image_filename)
                                 VALUES(%s, %s, %s, %s, %s, %s)"""
-                data_to_insert = (record_id, image, predicted, notes, upload_date, image_filename)
-                cursor.execute(insert_sql, data_to_insert)
                 
-                update_sql = """UPDATE medicaltech_image_record
-                                SET record_id_id = %s,
-                                image = %s,
-                                prediction = %s,
-                                notes = %s,
-                                upload_date = %s,
-                                image_filename = %s
-                                WHERE record_id_id = %s"""
-    
-                data_to_update = (record_id, image, predicted, notes, upload_date, image_filename, record_id)
+                
+                data_to_insert = (record_id, image_bytes, result, notes, upload_date, image_name)
+                cursor.execute(insert_sql, data_to_insert)
+
+                # Define the new status
+                new_status = "in_progress"
+
+                # Update the status in the SQL table
+                update_sql = """UPDATE medicaltech_radiologyrecord
+                                SET status = %s
+                                WHERE record_id = %s"""
+
+                data_to_update = (new_status, record_id)
+
                 cursor.execute(update_sql, data_to_update)
-                QtWidgets.QMessageBox.information(self.centralwidget, "Result", "Patient record updated.")
+
+                self.db.commit()
+                cursor.close()
+                print("Patient record updated.")
+                
+
+        def displayPredictionAndFilename(self):
+                # Connect to the database
+                self.connect_to_database()
+                cursor = self.db.cursor()
+
+                # Retrieve the prediction, image filename, and image data from the database for the given record_id
+                record_id = self.record_id
+                select_sql = "SELECT prediction, image_filename, image FROM medicaltech_image_record WHERE record_id_id = %s"
+                cursor.execute(select_sql, (record_id,))
+                result = cursor.fetchone()
+
+                if result:
+                        prediction, image_filename, image_data = result
+
+                        # Display the prediction and image filename in respective QLabel widgets
+                        self.predictionLabel.setText(f"Prediction: {prediction}")
+                        self.FilenameLabel.setText(f"Filename: {image_filename}")
+
+                        # Create a QPixmap from the image data stored in binary format
+                        pixmap = QPixmap()
+                        pixmap.loadFromData(image_data)
+
+                        if not pixmap.isNull():
+                                self.uploadedLabel.setPixmap(pixmap)
+                                self.uploadedLabel.setScaledContents(True)
+                                self.uploadedLabel.setAlignment(QtCore.Qt.AlignCenter)
+                        else:
+                                print("Failed to load the image from data.")
+
+                else:
+                        print("Record not found in the database for record_id:", record_id)
+
+                cursor.close()
+
 
         def setupUi(self, MainWindow):
                 MainWindow.setObjectName("MainWindow")
@@ -104,7 +166,7 @@ class Ui_MainWindow(object):
                 "color: #0000FF")
                 self.IntelligentHealthInc.setObjectName("IntelligentHealthInc")
                 self.gridGroupBox1 = QtWidgets.QGroupBox(self.centralwidget)
-                self.gridGroupBox1.setGeometry(QtCore.QRect(40, 120, 451, 261))
+                self.gridGroupBox1.setGeometry(QtCore.QRect(40, 120, 500, 260))
                 self.gridGroupBox1.setStyleSheet("background-color: rgb(227, 236, 250);")
                 self.gridGroupBox1.setObjectName("gridGroupBox1")
                 self.gridLayout_2 = QtWidgets.QGridLayout(self.gridGroupBox1)
@@ -131,9 +193,26 @@ class Ui_MainWindow(object):
                 self.Modality.setObjectName("Modality")
                 self.gridLayout_2.addWidget(self.Modality, 2, 1, 1, 1)
                 self.gridGroupBox2 = QtWidgets.QGroupBox(self.centralwidget)
-                self.gridGroupBox2.setGeometry(QtCore.QRect(40, 430, 691, 371))
+                self.gridGroupBox2.setGeometry(QtCore.QRect(40, 460, 691, 371))
                 self.gridGroupBox2.setStyleSheet("background-color: rgb(227, 236, 250);")
                 self.gridGroupBox2.setObjectName("gridGroupBox2")
+                
+                # Create gridGroupBox4 to display the filename
+                self.gridGroupBox4 = QtWidgets.QGroupBox(self.centralwidget)
+                self.gridGroupBox4.setGeometry(QtCore.QRect(40, 425, 691, 60))
+                self.gridGroupBox4.setStyleSheet("background-color: rgb(227, 236, 250);")
+                self.gridGroupBox4.setObjectName("gridGroupBox4")
+
+                self.gridLayout_4 = QtWidgets.QGridLayout(self.gridGroupBox4)
+                self.gridLayout_4.setObjectName("gridLayout_4")
+
+                self.FilenameLabel = QtWidgets.QLabel(self.gridGroupBox4)
+                self.FilenameLabel.setObjectName("FilenameLabel")
+                self.FilenameLabel.setText("Filename: ")  # Set the initial text or leave it empty
+
+                # Adjust the position and size of the FilenameLabel as needed
+                self.gridLayout_4.addWidget(self.FilenameLabel, 0, 0, 1, 1)
+
                 self.gridLayout_6 = QtWidgets.QGridLayout(self.gridGroupBox2)
                 self.gridLayout_6.setObjectName("gridLayout_6")
                 self.tableView = QtWidgets.QTableView(self.centralwidget)
@@ -144,25 +223,26 @@ class Ui_MainWindow(object):
                 self.UpcomingAppointment.setGeometry(QtCore.QRect(620, 130, 181, 16))
                 self.UpcomingAppointment.setObjectName("UpcomingAppointment")
                 self.RequestTime = QtWidgets.QLabel(self.centralwidget)
-                self.RequestTime.setGeometry(QtCore.QRect(850, 190, 111, 16))
+                self.RequestTime.setGeometry(QtCore.QRect(620, 190, 111, 16))
                 self.RequestTime.setObjectName("RequestTime")
                 self.RequestTime.setFixedWidth(400)
                 self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-                self.tableWidget.setGeometry(QtCore.QRect(790, 430, 331, 141))
+                self.tableWidget.setGeometry(QtCore.QRect(810, 430, 331, 200))
                 self.tableWidget.setStyleSheet("background-color: rgb(227, 236, 250);")
                 self.tableWidget.setObjectName("tableWidget")
                 self.tableWidget.setColumnCount(0)
                 self.tableWidget.setRowCount(0)
                 self.Notes = QtWidgets.QLabel(self.centralwidget)
-                self.Notes.setGeometry(QtCore.QRect(810, 440, 55, 50))
+                self.Notes.setGeometry(QtCore.QRect(840, 430, 55, 500))
                 self.Notes.setObjectName("Notes")
                 self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
-                self.plainTextEdit.setGeometry(QtCore.QRect(860, 470, 221, 41))
+                self.plainTextEdit.setGeometry(QtCore.QRect(860, 470, 221, 100))
                 self.plainTextEdit.setObjectName("plainTextEdit")
                 self.updateButton = QtWidgets.QPushButton(self.centralwidget)
                 self.updateButton.setGeometry(QtCore.QRect(630, 800, 161, 28))
                 self.updateButton.setObjectName("updateButton")
                 self.updateButton.clicked.connect(self.on_click_Update)  # Connect the button click event to on_click_Update method
+                self.updateButton.clicked.connect(self.update_to_home)
                 MainWindow.setCentralWidget(self.centralwidget)
                 self.menubar = QtWidgets.QMenuBar(MainWindow)
                 self.menubar.setGeometry(QtCore.QRect(0, 0, 1243, 26))
@@ -180,12 +260,13 @@ class Ui_MainWindow(object):
                 self.dicomImageLabel.setObjectName("dicomImageLabel")
                 self.gridLayout_6.addWidget(self.dicomImageLabel, 0, 0, 1, 2)  # Adjust the row and column as needed
 
-                # Create a button for uploading DICOM images and place it in gridGroupBox2
-                self.uploadButton = QtWidgets.QPushButton(self.gridGroupBox2)
-                self.uploadButton.setGeometry(QtCore.QRect(40, 40, 161, 41))  # Adjust the position as needed
+                self.uploadButton = QtWidgets.QPushButton(self.gridGroupBox4)
+                self.uploadButton.setIconSize(QtCore.QSize(25, 35)) 
+                self.uploadButton.setGeometry(QtCore.QRect(620, 20, 20, 20))
                 self.uploadButton.setObjectName("uploadButton")
-                self.uploadButton.setText("Upload Image")
-                self.uploadButton.clicked.connect(self.uploadDICOM)
+                self.uploadButton.setIcon(QIcon("file_upload_icon.png"))
+                self.uploadButton.setStyleSheet("border: none;")
+                self.uploadButton.clicked.connect(self.uploadDICOM)  # Connect the button click event to the uploadDICOM method
 
                 # Create a label to display the uploaded image in gridGroupBox2
                 self.uploadedLabel = QtWidgets.QLabel(self.gridGroupBox2)
@@ -195,8 +276,10 @@ class Ui_MainWindow(object):
 
                 # Create a label to display the model's prediction in gridGroupBox2
                 self.predictionLabel = QtWidgets.QLabel(self.gridGroupBox2)
-                self.predictionLabel.setGeometry(QtCore.QRect(40, 320, 301, 41))  # Adjust the position as needed
+                self.predictionLabel.setGeometry(QtCore.QRect(500, 160, 301, 41))  # Adjust the position as needed
                 self.predictionLabel.setObjectName("predictionLabel")
+
+                self.displayPredictionAndFilename()
 
                 self.retranslateUi(MainWindow)
                 QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -232,9 +315,12 @@ class Ui_MainWindow(object):
                 self.PatientID.setText(_translate("MainWindow", "Patient ID: "))
                 self.Age.setText(_translate("MainWindow", "Age:"))
                 self.Modality.setText(_translate("MainWindow", "Modality"))
-                self.UpcomingAppointment.setText(_translate("MainWindow", "Upcoming Appointment"))
+                self.UpcomingAppointment.setText(_translate("MainWindow", "Appointment"))
+                self.UpcomingAppointment.setGeometry(QtCore.QRect(620, 130, 181, 16))
                 self.RequestTime.setText(_translate("MainWindow", "Request Time:"))
+                self.RequestTime.setGeometry(QtCore.QRect(620, 190, 111, 16))
                 self.Notes.setText(_translate("MainWindow", "Notes"))
+                self.Notes.setGeometry(QtCore.QRect(830, 420, 55, 50))
                 self.updateButton.setText(_translate("MainWindow", "Update"))
                 self.updateButton.setGeometry(QtCore.QRect(1020, 790, 93, 28))
                 self.updateButton.setStyleSheet("font-family: Arial; font-size: 10pt; color: navy;")
@@ -243,14 +329,14 @@ class Ui_MainWindow(object):
         def uploadDICOM(self):
                 options = QFileDialog.Options()
                 options |= QFileDialog.ReadOnly
-                file_name, _ = QFileDialog.getOpenFileName(None, "Open DICOM File", "", "DICOM Files (*.dcm *.dicom);;All Files (*)", options=options)
+                file_name, _ = QFileDialog.getOpenFileName(None, "Open DICOM File", "", "DICOM Files (*.dcm );;All Files (*)", options=options)
 
                 if file_name:
                         # Load the selected file (you can determine the file type based on its extension)
                         file_extension = os.path.splitext(file_name)[1].lower()
 
                         if file_extension in {'.dcm', '.dicom'}:
-                        # Handle DICOM file
+                                # Handle DICOM file
                                 dicom_data = pydicom.dcmread(file_name)
 
                                 # Convert the DICOM pixel data to a QImage
@@ -267,14 +353,13 @@ class Ui_MainWindow(object):
                                 bytes_per_line = 3 * width
                                 image_qt = QtGui.QImage(image_data.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
 
-
                                 # Create a QPixmap directly from the QImage
                                 pixmap = QPixmap.fromImage(image_qt)
 
                                 # Set the pixmap to self.dicomImageLabel
                                 self.dicomImageLabel.setPixmap(pixmap)
                                 self.dicomImageLabel.setAlignment(QtCore.Qt.AlignCenter)
-                                
+
                                 current_directory = os.getcwd()
                                 print("Current Directory:", current_directory)
 
@@ -296,6 +381,10 @@ class Ui_MainWindow(object):
                                         predicted_class = 'Negative'
                                 self.predictionLabel.setText(f"Prediction: {predicted_class}")
 
+                                print(os.path.basename(file_name))
+                                # Set the image name as the text of the FilenameLabel
+                                self.FilenameLabel.setText(f"Filename: {os.path.basename(file_name)}")
+
                 # Inside the `patientrecord.py` script
         def go_back(self):
                 try:
@@ -312,7 +401,24 @@ class Ui_MainWindow(object):
                         subprocess.Popen(["python", home_script_path])
                 except Exception as e:
                         print("Error navigating back to home.py:", str(e))
+
         
+        def update_to_home(self):
+                try:
+                        # Close the current patient record window
+                        MainWindow.close()
+
+                        # Get the directory of the current script (patientrecord.py)
+                        current_directory = os.path.dirname(os.path.abspath(__file__))
+
+                        # Construct the path to home.py
+                        home_script_path = os.path.join(current_directory, "home.py")
+
+                        # Launch home.py
+                        subprocess.Popen(["python", home_script_path])
+                except Exception as e:
+                        print("Error navigating back to home.py:", str(e))
+
         def navigate_to_home(self, home_window):
                 try:
                         # Close the current window (patientrecord.py)
@@ -330,6 +436,7 @@ class Ui_MainWindow(object):
                                 # Update the displayed status in the UI with the new value (status)
                                 # You can implement this logic in your code
                                 time.sleep(1)  # Adjust the polling interval as needed
+
 
 
 if __name__ == "__main__":

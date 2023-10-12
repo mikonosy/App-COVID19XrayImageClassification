@@ -24,10 +24,13 @@ class Ui_MainWindow(object):
         try:
             cursor = self.db.cursor()
             cursor.execute("select medicaltech_radiologyrecord.record_id, medicaltech_radiologyrecord.patient_name, medicaltech_radiologyrecord.patient_ID, medicaltech_radiologyrecord.age, medicaltech_radiologyrecord.date_of_birth, medicaltech_radiologyrecord.modality, medicaltech_radiologyrecord.request_time, medicaltech_image_record.notes,medicaltech_radiologyrecord.status from medicaltech_radiologyrecord left join medicaltech_image_record on medicaltech_radiologyrecord.record_id = medicaltech_image_record.record_id_id")
+            
             result = cursor.fetchall()
             self.tableWidget.setRowCount(len(result))
             for row_index, row_data in enumerate(result):
                 for col_index, cell_data in enumerate(row_data):
+
+                    cell_data = "" if cell_data is None else str(cell_data)
                     item = QTableWidgetItem(str(cell_data))
                     self.tableWidget.setItem(row_index, col_index, item)
 
@@ -38,7 +41,9 @@ class Ui_MainWindow(object):
                     emergency_button.clicked.connect(lambda _, row=row_index: self.on_emergency_button_click(row))
                     self.tableWidget.setCellWidget(row_index, 9, emergency_button)
                     # Set the button text based on the status
-                    if status_item.text() == "EMERGENCY":
+
+                    ## TBC
+                    if status_item.text() == "EMERGENCY" or status_item.text() == "Emergency":
                         self.update_button_text(row_index, "Cancel Emergency")
                     else:
                         self.update_button_text(row_index, "Emergency")
@@ -364,7 +369,7 @@ class Ui_MainWindow(object):
                     break
             self.tableWidget.setRowHidden(row, not match)
 
-        def change_status(new_status):
+    def change_status(new_status):
             with open("status.txt", "w") as file:
                 file.write(new_status)
 
